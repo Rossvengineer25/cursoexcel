@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formularios Básicos en Access · Guía del Asistente para Formularios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1117;
+    --bg-alt:#151926;
+    --panel:#1b2130;
+    --panel-2:#20273a;
+    --border:#2a3145;
+    --text:#eef1f7;
+    --text-dim:#9aa4ba;
+    --text-faint:#6b7590;
+    --maroon:#b23a45;
+    --maroon-dim:#7a2830;
+    --teal:#45c9c0;
+    --teal-dim:#1e4a48;
+    --amber:#e3a53d;
+    --amber-dim:#5a4322;
+    --green:#4caf7d;
+    --red:#e0555f;
+    --radius:14px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    --maxw: 980px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(178,58,69,0.10), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(69,201,192,0.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Sora', sans-serif;
+    margin:0 0 .5em 0;
+    line-height:1.2;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  p{margin:0 0 1em 0; color:var(--text-dim);}
+  a{color:var(--teal);}
+  img{max-width:100%;display:block;}
+  ::selection{background:var(--maroon); color:#fff;}
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+  /* ---------- barra de progreso ---------- */
+  #progressbar{
+    position:fixed; top:0; left:0; height:4px; width:0%;
+    background:linear-gradient(90deg, var(--maroon), var(--teal));
+    z-index:999; transition:width .1s linear;
+  }
+
+  /* ---------- navegación lateral flotante ---------- */
+  #tocbtn{
+    position:fixed; right:22px; bottom:22px; z-index:900;
+    width:52px; height:52px; border-radius:50%;
+    background:var(--panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:var(--shadow);
+    transition:transform .2s ease, background .2s ease;
+  }
+  #tocbtn:hover{transform:scale(1.08); background:var(--maroon-dim);}
+  #tocbtn svg{width:22px;height:22px;stroke:var(--text);}
+
+  #tocpanel{
+    position:fixed; right:22px; bottom:86px; z-index:900;
+    width:260px; max-height:60vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px; opacity:0; pointer-events:none; transform:translateY(10px);
+    transition:all .25s ease;
+  }
+  #tocpanel.open{opacity:1; pointer-events:auto; transform:translateY(0);}
+  #tocpanel h4{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); margin-bottom:10px;}
+  #tocpanel a{
+    display:block; font-size:.86rem; color:var(--text-dim); text-decoration:none;
+    padding:7px 8px; border-radius:8px; margin-bottom:2px;
+  }
+  #tocpanel a:hover{background:var(--panel-2); color:var(--text);}
+  #tocpanel a.active{color:var(--teal); background:var(--teal-dim);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:88vh; display:flex; flex-direction:column; justify-content:center;
+    position:relative; overflow:hidden; padding:80px 0 40px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:.78rem; letter-spacing:.12em;
+    color:var(--teal); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:''; width:26px; height:1px; background:var(--teal);}
+  .hero h1{
+    font-size:clamp(2.1rem, 5.4vw, 3.6rem); font-weight:800; letter-spacing:-.02em;
+    max-width:820px;
+  }
+  .hero h1 span{color:var(--maroon);}
+  .hero p.lead{font-size:1.08rem; max-width:620px; margin-top:14px;}
+  .hero-meta{
+    display:flex; gap:28px; margin-top:38px; flex-wrap:wrap;
+  }
+  .hero-meta .m{border-left:2px solid var(--border); padding-left:14px;}
+  .hero-meta .m b{display:block; font-family:'Sora',sans-serif; font-size:1.3rem;}
+  .hero-meta .m span{font-size:.78rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em;}
+
+  .scrolldown{
+    margin-top:56px; display:inline-flex; align-items:center; gap:10px;
+    color:var(--text-faint); font-size:.82rem; font-family:'IBM Plex Mono',monospace;
+    animation: bob 2s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+
+  /* ---------- ribbon mockup: elemento firma ---------- */
+  .ribbon{
+    background:linear-gradient(180deg,#e7e9ee,#d7dae2);
+    border-radius:10px; padding:0; overflow:hidden; margin:22px 0 8px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.45); border:1px solid #b9bdc8;
+  }
+  .ribbon-tabs{
+    display:flex; gap:2px; background:#c7cbd6; padding:0 8px;
+    font-family:'Segoe UI',Inter,sans-serif; font-size:.74rem;
+  }
+  .ribbon-tabs span{
+    padding:7px 14px; color:#3a3f4b; cursor:default;
+  }
+  .ribbon-tabs span.active{background:#e7e9ee; color:#111; font-weight:600; border-radius:4px 4px 0 0;}
+  .ribbon-body{
+    background:#e7e9ee; padding:10px 14px; display:flex; gap:22px; align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .ribbon-group{display:flex; flex-direction:column; align-items:center; gap:4px; position:relative;}
+  .ribbon-group .grp-label{font-size:.62rem; color:#5b606c; font-family:Inter,sans-serif; margin-top:2px;}
+  .ribbon-btn{
+    background:#f4f5f8; border:1px solid #cfd3dc; border-radius:6px;
+    padding:8px 12px; font-size:.72rem; color:#26292f; font-family:Inter,sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:4px; min-width:64px;
+    position:relative;
+  }
+  .ribbon-btn .ico{width:20px; height:20px; border-radius:4px; background:var(--maroon);}
+  .ribbon-btn.highlight{
+    border-color:var(--maroon); box-shadow:0 0 0 3px rgba(178,58,69,0.35);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .ribbon-btn.highlight .ico{background:var(--maroon);}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 3px rgba(178,58,69,0.35);}
+    50%{box-shadow:0 0 0 7px rgba(178,58,69,0.12);}
+  }
+  .cursor-dot{
+    position:absolute; width:16px; height:16px; z-index:5;
+    animation: cursormove 2.4s ease-in-out infinite;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  }
+  @keyframes cursormove{
+    0%,100%{transform:translate(0,0);}
+    50%{transform:translate(-6px,-6px);}
+  }
+
+  /* ---------- secciones ---------- */
+  section{padding:78px 0; position:relative;}
+  section.alt{background:var(--bg-alt);}
+  .kicker{
+    font-family:'IBM Plex Mono',monospace; font-size:.74rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;
+  }
+  .kicker.teal{color:var(--teal);}
+  .kicker.maroon{color:var(--maroon);}
+  section h2{font-size:clamp(1.5rem,3vw,2.1rem);}
+  .lead-block{max-width:680px; margin-bottom:36px;}
+
+  .reveal{opacity:0; transform:translateY(26px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* ---------- tarjetas de concepto ---------- */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:22px 22px; position:relative; overflow:hidden;
+  }
+  .card::before{
+    content:''; position:absolute; top:0; left:0; width:100%; height:3px;
+    background:linear-gradient(90deg,var(--maroon),var(--teal));
+  }
+  .card h3{font-size:1.02rem; margin-bottom:8px; display:flex; align-items:center; gap:9px;}
+  .card h3 .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; padding:2px 8px;
+    border-radius:20px; background:var(--panel-2); color:var(--teal); border:1px solid var(--border);
+  }
+  .card p{font-size:.92rem; margin-bottom:0;}
+
+  .def-box{
+    border-left:3px solid var(--teal); background:var(--panel);
+    padding:16px 20px; border-radius:0 10px 10px 0; margin:18px 0;
+  }
+  .def-box b{color:var(--teal); font-family:'Sora',sans-serif; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:6px;}
+  .def-box p{margin:0; color:var(--text);}
+
+  .callout{
+    border-left:3px solid var(--amber); background:linear-gradient(90deg, rgba(227,165,61,0.08), transparent);
+    padding:14px 20px; border-radius:0 10px 10px 0; margin:18px 0;
+  }
+  .callout b{color:var(--amber); font-size:.8rem;}
+
+  .error-box{
+    border-left:3px solid var(--red); background:linear-gradient(90deg, rgba(224,85,95,0.08), transparent);
+    padding:14px 20px; border-radius:0 10px 10px 0; margin:12px 0;
+  }
+  .error-box b{color:var(--red); font-size:.82rem;}
+
+  /* ---------- pasos cronológicos ---------- */
+  .steps{counter-reset:stepnum; margin-top:10px;}
+  .step{
+    display:grid; grid-template-columns:64px 1fr; gap:22px; padding:26px 0;
+    border-top:1px solid var(--border); position:relative;
+  }
+  .step:first-child{border-top:none;}
+  .step-num{
+    counter-increment:stepnum;
+    width:44px; height:44px; border-radius:50%;
+    background:var(--panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora',sans-serif; font-weight:700; color:var(--maroon);
+  }
+  .step-num::before{content:counter(stepnum);}
+  .step h4{font-size:1.06rem; margin-bottom:6px;}
+  .step .step-meta{font-size:.74rem; color:var(--text-faint); font-family:'IBM Plex Mono',monospace; margin-bottom:10px; text-transform:uppercase; letter-spacing:.04em;}
+
+  /* ---------- botones de nav/accion tarjetas ---------- */
+  .btn-cat{margin-bottom:26px;}
+  .btn-cat h3{font-size:1rem;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;}
+  .pill{
+    padding:8px 14px; border-radius:20px; font-size:.82rem;
+    border:1px solid var(--border); background:var(--panel-2); color:var(--text-dim);
+    display:flex; align-items:center; gap:8px;
+  }
+  .pill .dot{width:7px; height:7px; border-radius:50%;}
+  .pill.nav .dot{background:var(--teal);}
+  .pill.action .dot{background:var(--maroon);}
+
+  /* ---------- ejercicios interactivos ---------- */
+  .exercise{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:28px; margin:30px 0; position:relative;
+  }
+  .exercise-tag{
+    position:absolute; top:-13px; left:24px; background:var(--maroon);
+    color:#fff; font-family:'IBM Plex Mono',monospace; font-size:.68rem;
+    padding:4px 12px; border-radius:20px; letter-spacing:.05em; text-transform:uppercase;
+  }
+  .exercise h4{margin-top:6px;}
+  .ex-list{list-style:none; padding:0; margin:18px 0 0;}
+  .ex-item{
+    display:flex; align-items:flex-start; gap:12px; padding:12px 14px;
+    background:var(--panel-2); border:1px solid var(--border); border-radius:10px; margin-bottom:9px;
+    cursor:pointer; transition:all .18s ease; user-select:none;
+  }
+  .ex-item:hover{border-color:var(--teal);}
+  .ex-item .box{
+    width:20px; height:20px; border-radius:6px; border:2px solid var(--text-faint);
+    flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;
+  }
+  .ex-item.checked .box{background:var(--teal); border-color:var(--teal);}
+  .ex-item.checked .box::after{content:'✓'; color:#0f1117; font-size:.7rem; font-weight:800;}
+  .ex-item span.txt{font-size:.92rem; color:var(--text);}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    background:var(--maroon); color:#fff; border:none; padding:11px 22px;
+    border-radius:9px; font-family:'Inter',sans-serif; font-weight:600; font-size:.88rem;
+    transition:all .18s ease; margin-top:18px;
+  }
+  .btn:hover{background:#c9424d; transform:translateY(-1px);}
+  .btn.ghost{background:transparent; border:1px solid var(--border); color:var(--text-dim);}
+  .btn.ghost:hover{border-color:var(--teal); color:var(--teal);}
+  .btn.teal{background:var(--teal); color:#08211f;}
+  .btn.teal:hover{background:#5fe0d6;}
+
+  .feedback{
+    margin-top:16px; padding:13px 16px; border-radius:10px; font-size:.88rem;
+    display:none; align-items:center; gap:10px;
+  }
+  .feedback.ok{display:flex; background:rgba(76,175,125,0.12); color:var(--green); border:1px solid rgba(76,175,125,0.35);}
+  .feedback.bad{display:flex; background:rgba(224,85,95,0.12); color:var(--red); border:1px solid rgba(224,85,95,0.35);}
+
+  /* secuenciar */
+  .seq-list{list-style:none; padding:0; margin:18px 0;}
+  .seq-item{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px;
+    cursor:grab; font-size:.9rem;
+  }
+  .seq-item.dragging{opacity:.4;}
+  .seq-item .handle{color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:.78rem;}
+
+  /* emparejar */
+  .match-wrap{display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:18px;}
+  @media(max-width:700px){.match-wrap{grid-template-columns:1fr;}}
+  .match-col h5{font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); margin-bottom:10px;}
+  .match-item{
+    padding:11px 14px; border-radius:9px; background:var(--panel-2); border:1px solid var(--border);
+    margin-bottom:8px; cursor:pointer; font-size:.86rem; transition:all .15s ease;
+  }
+  .match-item.selected{border-color:var(--teal); background:var(--teal-dim);}
+  .match-item.matched{border-color:var(--green); opacity:.55; cursor:default;}
+  .match-item.wrong{border-color:var(--red); animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  /* quiz */
+  .quiz-q{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:24px; margin-bottom:18px;
+  }
+  .quiz-q .qnum{font-family:'IBM Plex Mono',monospace; color:var(--teal); font-size:.78rem; margin-bottom:6px;}
+  .quiz-q h4{font-size:1rem; margin-bottom:14px;}
+  .opt{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:9px;
+    background:var(--panel-2); border:1px solid var(--border); margin-bottom:8px; cursor:pointer;
+    font-size:.9rem; transition:all .15s ease;
+  }
+  .opt:hover{border-color:var(--teal);}
+  .opt .radio{width:16px; height:16px; border-radius:50%; border:2px solid var(--text-faint); flex-shrink:0;}
+  .opt.chosen .radio{border-color:var(--teal); background:var(--teal);}
+  .opt.correct{border-color:var(--green); background:rgba(76,175,125,0.1);}
+  .opt.incorrect{border-color:var(--red); background:rgba(224,85,95,0.1);}
+  .opt.locked{cursor:default;}
+
+  #quizresult{
+    text-align:center; padding:40px 20px; border-radius:var(--radius);
+    background:var(--panel); border:1px solid var(--border); display:none;
+  }
+  #quizresult .score{font-family:'Sora',sans-serif; font-size:3.2rem; font-weight:800;}
+  #quizresult .score span{font-size:1.6rem; color:var(--text-faint);}
+
+  footer{padding:50px 0 70px; text-align:center;}
+  footer p{font-size:.8rem; color:var(--text-faint);}
+
+  .toc-dot{
+    position:sticky; top:0; z-index:10; background:rgba(15,17,23,0.85); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--border); padding:12px 0; display:none;
+  }
+</style>
+</head>
+<body>
+<div id="progressbar"></div>
+
+<div id="tocpanel">
+  <h4>Contenido de la guía</h4>
+  <a href="#inicio">Portada</a>
+  <a href="#conceptos">1 · Conceptos y definiciones</a>
+  <a href="#antes">2 · Antes de crear el formulario</a>
+  <a href="#pasos">3 · Paso a paso: Asistente</a>
+  <a href="#botones">4 · Botones de navegación y acción</a>
+  <a href="#errores">5 · Errores comunes</a>
+  <a href="#buenas">6 · Buenas prácticas</a>
+  <a href="#quiz">7 · Quiz final</a>
+</div>
+<div id="tocbtn" onclick="document.getElementById('tocpanel').classList.toggle('open')">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="inicio">
+  <div class="wrap">
+    <div class="eyebrow">Guía interactiva · Microsoft Access</div>
+    <h1>Formularios básicos con el <span>Asistente para formularios</span></h1>
+    <p class="lead">Ruta cronológica, paso a paso, para crear un formulario desde cero usando el asistente gráfico de Access, agregar botones de navegación y de acción con el Asistente para botones de comando, y evitar los errores más frecuentes. Sin código, sin SQL, sin VBA: todo desde la interfaz gráfica.</p>
+
+    <div class="hero-meta">
+      <div class="m"><b>7</b><span>Bloques de contenido</span></div>
+      <div class="m"><b>4</b><span>Ejercicios prácticos</span></div>
+      <div class="m"><b>10</b><span>Preguntas de quiz</span></div>
+      <div class="m"><b>0</b><span>Líneas de código</span></div>
+    </div>
+
+    <div class="scrolldown">↓ Desliza para comenzar por los conceptos</div>
+  </div>
+</section>
+
+<!-- ================= 1. CONCEPTOS ================= -->
+<section id="conceptos">
+  <div class="wrap">
+    <div class="kicker teal">Bloque 1</div>
+    <h2>Conceptos y definiciones</h2>
+    <div class="lead-block reveal">
+      <p>Antes de tocar el asistente conviene tener claro qué es un formulario y por qué existe. Esto evita que, más adelante, se usen mal los botones o se elijan distribuciones que no corresponden.</p>
+    </div>
+
+    <div class="def-box reveal">
+      <b>Definición · Formulario</b>
+      <p>Un formulario es un objeto de Access que presenta los datos de una tabla o consulta en una pantalla organizada y amigable, para que una persona pueda <b style="color:var(--text)">ver, capturar, modificar o eliminar</b> información sin tener que abrir la tabla directamente.</p>
+    </div>
+
+    <div class="grid2" style="margin-top:26px;">
+      <div class="card reveal">
+        <h3>¿Para qué sirve? <span class="tag">propósito</span></h3>
+        <p>Sirve como la "cara visible" de la base de datos para el usuario final. En lugar de que alguien edite filas y columnas en una tabla (donde es fácil borrar o dañar datos por error), el formulario le muestra un campo a la vez, en un diseño controlado y protegido.</p>
+      </div>
+      <div class="card reveal">
+        <h3>¿Cuándo usar el Asistente? <span class="tag">momento de uso</span></h3>
+        <p>El Asistente para formularios se usa cuando se necesita un formulario estándar de forma rápida: selección de campos, distribución y estilo en pocos clics. Para formularios muy personalizados se ajusta después en Vista Diseño, pero el asistente es siempre el punto de partida recomendado para principiantes.</p>
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:16px;">
+      <div class="card reveal">
+        <h3 style="font-size:.92rem;">Origen de registros</h3>
+        <p style="font-size:.86rem;">La tabla o consulta de donde el formulario toma los datos. Todo formulario depende de un origen válido.</p>
+      </div>
+      <div class="card reveal">
+        <h3 style="font-size:.92rem;">Controles</h3>
+        <p style="font-size:.86rem;">Los elementos visibles dentro del formulario: cuadros de texto, etiquetas, botones, casillas de verificación.</p>
+      </div>
+      <div class="card reveal">
+        <h3 style="font-size:.92rem;">Secciones</h3>
+        <p style="font-size:.86rem;">Encabezado, Detalle y Pie de página. El Detalle es donde viven los campos de cada registro.</p>
+      </div>
+    </div>
+
+    <div class="callout reveal">
+      <b>Ten en cuenta</b>
+      <p style="margin-top:6px;">Un formulario no almacena datos por sí mismo: solo los muestra y los envía hacia la tabla de origen. Si la tabla está mal diseñada, el formulario heredará ese problema.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2. ANTES DE EMPEZAR ================= -->
+<section class="alt" id="antes">
+  <div class="wrap">
+    <div class="kicker maroon">Bloque 2</div>
+    <h2>Antes de crear el formulario</h2>
+    <div class="lead-block reveal">
+      <p>Estos cuatro puntos se revisan siempre antes de abrir el asistente. Saltárselos es la causa más común de tener que rehacer el formulario después.</p>
+    </div>
+
+    <div class="exercise reveal">
+      <div class="exercise-tag">Ejercicio 1 · Checklist</div>
+      <h4>Marca los elementos que deberías tener listos antes de crear un formulario</h4>
+      <p style="font-size:.86rem;">Haz clic en cada tarjeta para marcarla. Al final, verifica tu checklist.</p>
+      <ul class="ex-list" id="checklist1">
+        <li class="ex-item" data-correct="1"><div class="box"></div><span class="txt">La tabla o consulta de origen ya existe y tiene datos de prueba</span></li>
+        <li class="ex-item" data-correct="1"><div class="box"></div><span class="txt">Las relaciones entre tablas están correctamente establecidas (si aplica)</span></li>
+        <li class="ex-item" data-correct="1"><div class="box"></div><span class="txt">Los tipos de datos de cada campo son los correctos (texto, número, fecha, etc.)</span></li>
+        <li class="ex-item" data-correct="1"><div class="box"></div><span class="txt">Sé exactamente qué campos necesita ver el usuario final, no todos los que existen</span></li>
+        <li class="ex-item" data-correct="0"><div class="box"></div><span class="txt">El formulario ya tiene todos sus botones creados</span></li>
+        <li class="ex-item" data-correct="0"><div class="box"></div><span class="txt">La base de datos ya fue enviada por correo al cliente</span></li>
+      </ul>
+      <button class="btn" onclick="checkExercise('checklist1','fb1')">Verificar checklist</button>
+      <div class="feedback" id="fb1"></div>
+    </div>
+
+    <div class="def-box reveal">
+      <b>Concepto clave · Origen de registros</b>
+      <p>Antes del asistente, Access te pedirá elegir la tabla o consulta origen. Si tus datos provienen de varias tablas relacionadas, es mejor crear primero una <b style="color:var(--text)">consulta</b> que las combine, y usar esa consulta como origen del formulario.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3. PASO A PASO ASISTENTE ================= -->
+<section id="pasos">
+  <div class="wrap">
+    <div class="kicker teal">Bloque 3</div>
+    <h2>Paso a paso: crear el formulario con el Asistente</h2>
+    <div class="lead-block reveal">
+      <p>Orden cronológico exacto, tal como aparece en Access. Cada paso muestra en qué parte de la cinta de opciones (ribbon) o del cuadro de diálogo debes hacer clic.</p>
+    </div>
+
+    <div class="ribbon reveal">
+      <div class="ribbon-tabs">
+        <span>Archivo</span><span>Inicio</span><span class="active">Crear</span><span>Datos externos</span><span>Herramientas de bases de datos</span>
+      </div>
+      <div class="ribbon-body">
+        <div class="ribbon-group">
+          <div class="ribbon-btn"><div class="ico"></div>Tablas</div>
+          <span class="grp-label">Tablas</span>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btn"><div class="ico"></div>Consultas</div>
+          <span class="grp-label">Consultas</span>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btn highlight">
+            <div class="ico"></div>Asistente para formularios
+            <svg class="cursor-dot" viewBox="0 0 24 24" fill="#fff" style="top:-8px; right:-6px;"><path d="M3 2l7 19 2.5-7.5L20 11 3 2z"/></svg>
+          </div>
+          <span class="grp-label">Formularios</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Pestaña Crear</div>
+          <h4>Abrir el Asistente para formularios</h4>
+          <p>Con la tabla o consulta origen ya lista, ve a la pestaña <b style="color:var(--text)">Crear</b> → grupo <b style="color:var(--text)">Formularios</b> → clic en <b style="color:var(--text)">Asistente para formularios</b>. No uses el botón "Formulario" simple si necesitas elegir campos específicos.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Cuadro de diálogo · Paso 1</div>
+          <h4>Elegir la tabla o consulta origen</h4>
+          <p>En la lista desplegable <b style="color:var(--text)">Tablas/Consultas</b>, selecciona el objeto del cual saldrán los datos. Si vas a combinar campos de más de una tabla, repite este paso para cada una antes de continuar.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Cuadro de diálogo · Paso 1</div>
+          <h4>Seleccionar los campos disponibles</h4>
+          <p>Pasa los campos que necesitas de "Campos disponibles" a "Campos seleccionados" usando <span class="mono">&gt;</span> para uno a la vez, <span class="mono">&gt;&gt;</span> para todos, <span class="mono">&lt;</span> para quitar uno. Selecciona solo lo que el usuario final realmente necesita ver.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Cuadro de diálogo · Paso 2</div>
+          <h4>Elegir la distribución del formulario</h4>
+          <p>Access te ofrece cuatro distribuciones. Cada una tiene un uso distinto — revísalas en la tarjeta siguiente antes de elegir.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Cuadro de diálogo · Paso 3</div>
+          <h4>Escribir el título del formulario</h4>
+          <p>Este título se usa también como nombre del objeto formulario en el Panel de navegación. Usa un nombre claro, por ejemplo "frmClientes" o "Formulario Clientes", nunca lo dejes en blanco ni con el nombre por defecto.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Cuadro de diálogo · Paso 3</div>
+          <h4>Elegir cómo abrir el formulario</h4>
+          <p>Marca <b style="color:var(--text)">"Abrir el formulario para ver o introducir información"</b> si ya quieres usarlo, o <b style="color:var(--text)">"Modificar el diseño del formulario"</b> si vas a agregar botones inmediatamente después (recomendado si ya planeas el paso 4 de esta guía).</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Cuadro de diálogo · Final</div>
+          <h4>Clic en Finalizar</h4>
+          <p>Access genera el formulario automáticamente. Guarda los cambios con <span class="mono">Ctrl + G</span> o desde el icono de guardado si Access no lo pidió ya.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:30px;">
+      <div class="card reveal">
+        <h3>En columnas <span class="tag">1 registro</span></h3>
+        <p>Muestra un solo registro por pantalla, con las etiquetas a la izquierda y los datos a la derecha. Es la más usada para captura de datos, uno por uno.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Tabular <span class="tag">varios registros</span></h3>
+        <p>Muestra varios registros en filas, con los campos como columnas. Útil cuando el usuario necesita comparar o revisar varios registros a la vez.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Hoja de datos <span class="tag">tipo tabla</span></h3>
+        <p>Se ve casi igual que una tabla de Access. Poco usada como formulario final; sirve más para revisiones rápidas.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Justificado <span class="tag">tipo ficha</span></h3>
+        <p>Distribuye los campos en varias columnas dentro de la misma pantalla, aprovechando mejor el ancho cuando hay muchos campos por registro.</p>
+      </div>
+    </div>
+
+    <div class="exercise reveal">
+      <div class="exercise-tag">Ejercicio 2 · Ordenar</div>
+      <h4>Ordena estos pasos como deberían ejecutarse cronológicamente</h4>
+      <p style="font-size:.86rem;">Arrastra las tarjetas para dejarlas en el orden correcto y luego verifica.</p>
+      <ul class="seq-list" id="seqlist">
+        <li class="seq-item" draggable="true" data-order="3"><span class="handle">⋮⋮</span> Elegir la distribución (columnas, tabular, hoja de datos o justificado)</li>
+        <li class="seq-item" draggable="true" data-order="1"><span class="handle">⋮⋮</span> Ir a Crear → Formularios → Asistente para formularios</li>
+        <li class="seq-item" draggable="true" data-order="5"><span class="handle">⋮⋮</span> Hacer clic en Finalizar</li>
+        <li class="seq-item" draggable="true" data-order="2"><span class="handle">⋮⋮</span> Seleccionar la tabla/consulta origen y los campos</li>
+        <li class="seq-item" draggable="true" data-order="4"><span class="handle">⋮⋮</span> Escribir el título del formulario</li>
+      </ul>
+      <button class="btn" onclick="checkSequence()">Verificar orden</button>
+      <div class="feedback" id="fbseq"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4. BOTONES ================= -->
+<section class="alt" id="botones">
+  <div class="wrap">
+    <div class="kicker maroon">Bloque 4</div>
+    <h2>Botones de navegación y de acción</h2>
+    <div class="lead-block reveal">
+      <p>Con el formulario creado, ahora se personaliza en Vista Diseño para agregar botones. Todo se hace con el Asistente para botones de comando: nunca se escribe código manualmente.</p>
+    </div>
+
+    <div class="def-box reveal">
+      <b>Definición · Botón de comando</b>
+      <p>Un control que ejecuta una acción predefinida al hacer clic, como moverse entre registros o guardar la información. Access lo genera automáticamente mediante un asistente, sin necesidad de programar.</p>
+    </div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="card reveal">
+        <h3>Botones de navegación <span class="tag" style="color:var(--teal);">recorrer</span></h3>
+        <p>Permiten moverse entre los registros del formulario. Se usan en formularios donde el usuario revisa varios registros uno tras otro.</p>
+        <div class="pill-row">
+          <span class="pill nav"><span class="dot"></span>Ir al primer registro</span>
+          <span class="pill nav"><span class="dot"></span>Ir al registro anterior</span>
+          <span class="pill nav"><span class="dot"></span>Ir al registro siguiente</span>
+          <span class="pill nav"><span class="dot"></span>Ir al último registro</span>
+          <span class="pill nav"><span class="dot"></span>Buscar registro</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <h3>Botones de acción <span class="tag">operar</span></h3>
+        <p>Ejecutan una operación sobre el registro o el formulario mismo. Se usan para controlar el flujo de captura: guardar, agregar, eliminar o cerrar.</p>
+        <div class="pill-row">
+          <span class="pill action"><span class="dot"></span>Guardar registro</span>
+          <span class="pill action"><span class="dot"></span>Agregar nuevo registro</span>
+          <span class="pill action"><span class="dot"></span>Eliminar registro</span>
+          <span class="pill action"><span class="dot"></span>Cerrar formulario</span>
+          <span class="pill action"><span class="dot"></span>Imprimir formulario</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px; font-size:1.15rem;">Paso a paso: insertar un botón con el asistente</h3>
+
+    <div class="ribbon reveal" style="margin-top:20px;">
+      <div class="ribbon-tabs">
+        <span>Archivo</span><span>Inicio</span><span class="active">Diseño</span><span>Organizar</span><span>Formato</span>
+      </div>
+      <div class="ribbon-body">
+        <div class="ribbon-group">
+          <div class="ribbon-btn highlight">
+            <div class="ico"></div>Usar Asistentes de control
+            <svg class="cursor-dot" viewBox="0 0 24 24" fill="#fff" style="top:-8px; right:-6px;"><path d="M3 2l7 19 2.5-7.5L20 11 3 2z"/></svg>
+          </div>
+          <span class="grp-label">Controles</span>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btn"><div class="ico"></div>Botón</div>
+          <span class="grp-label">Controles</span>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btn"><div class="ico"></div>Cuadro de texto</div>
+          <span class="grp-label">Controles</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Vista Diseño</div>
+          <h4>Cambiar el formulario a Vista Diseño</h4>
+          <p>Clic derecho sobre la pestaña del formulario → <b style="color:var(--text)">Vista Diseño</b>, o usa el icono correspondiente en la esquina inferior derecha de la ventana.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Pestaña Diseño → grupo Controles</div>
+          <h4>Verificar que "Usar Asistentes de control" esté activo</h4>
+          <p>Este ícono (la varita mágica) debe estar presionado/activo antes de insertar el botón. Si está apagado, el botón se creará vacío, sin ninguna acción asignada.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Grupo Controles</div>
+          <h4>Seleccionar el control "Botón" y dibujarlo</h4>
+          <p>Haz clic en el control Botón y luego, dentro del formulario, dibuja un rectángulo en el lugar donde quieres que aparezca. Al soltar el clic, se abre automáticamente el Asistente para botones de comando.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Asistente para botones · Paso 1</div>
+          <h4>Elegir la categoría</h4>
+          <p>Elige entre <b style="color:var(--text)">Navegación de registros</b>, <b style="color:var(--text)">Operaciones con registros</b>, <b style="color:var(--text)">Operaciones de formulario</b>, <b style="color:var(--text)">Operaciones de informe</b>, <b style="color:var(--text)">Aplicación</b> o <b style="color:var(--text)">Varios</b>, según lo que el botón deba hacer.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Asistente para botones · Paso 1</div>
+          <h4>Elegir la acción específica</h4>
+          <p>Dentro de la categoría elegida, selecciona la acción exacta, por ejemplo "Ir al registro siguiente" dentro de Navegación, o "Guardar registro" dentro de Operaciones con registros.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Asistente para botones · Paso 2</div>
+          <h4>Elegir texto o imagen para el botón</h4>
+          <p>Decide si el botón mostrará una palabra (por ejemplo "Siguiente") o un ícono/imagen predefinido de Access. Para adultos y jóvenes que inician, se recomienda texto claro; para usuarios frecuentes, íconos ahorran espacio.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Asistente para botones · Paso 3</div>
+          <h4>Asignar un nombre significativo al botón</h4>
+          <p>Reemplaza el nombre por defecto (como "Comando5") por uno descriptivo, por ejemplo "btnSiguiente" o "btnGuardar". Esto facilita identificarlo si luego necesitas ajustarlo.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div>
+          <div class="step-meta">Asistente para botones · Final</div>
+          <h4>Clic en Finalizar y probar el botón</h4>
+          <p>Cambia a Vista Formulario y haz clic en el botón recién creado para confirmar que hace exactamente lo esperado antes de continuar con el siguiente.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise reveal">
+      <div class="exercise-tag">Ejercicio 3 · Emparejar</div>
+      <h4>Une cada botón con su categoría correcta del asistente</h4>
+      <p style="font-size:.86rem;">Haz clic en un botón de la izquierda y luego en la categoría correspondiente de la derecha.</p>
+      <div class="match-wrap">
+        <div class="match-col">
+          <h5>Botón</h5>
+          <div class="match-item" data-match="nav">Ir al registro siguiente</div>
+          <div class="match-item" data-match="op">Guardar registro</div>
+          <div class="match-item" data-match="form">Cerrar formulario</div>
+          <div class="match-item" data-match="nav">Buscar registro</div>
+        </div>
+        <div class="match-col">
+          <h5>Categoría</h5>
+          <div class="match-item" data-match="nav">Navegación de registros</div>
+          <div class="match-item" data-match="op">Operaciones con registros</div>
+          <div class="match-item" data-match="form">Operaciones de formulario</div>
+        </div>
+      </div>
+      <div class="feedback" id="fbmatch"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5. ERRORES COMUNES ================= -->
+<section id="errores">
+  <div class="wrap">
+    <div class="kicker teal">Bloque 5</div>
+    <h2>Errores comunes que debes evitar</h2>
+    <div class="lead-block reveal">
+      <p>Estos son los errores que más se repiten al crear formularios y botones. Revisarlos antes de empezar ahorra tiempo de corrección después.</p>
+    </div>
+
+    <div class="error-box reveal">
+      <b>Error 1 · No verificar el origen de datos antes</b>
+      <p style="margin-top:6px;">Crear el formulario sobre una tabla incompleta o con tipos de datos mal definidos obliga a rehacer el formulario. Siempre revisa la tabla o consulta primero.</p>
+    </div>
+    <div class="error-box reveal">
+      <b>Error 2 · Incluir campos innecesarios</b>
+      <p style="margin-top:6px;">Agregar todos los campos "por si acaso" satura el formulario y confunde al usuario. Selecciona solo lo que realmente se necesita capturar o consultar.</p>
+    </div>
+    <div class="error-box reveal">
+      <b>Error 3 · Insertar el botón sin el asistente activo</b>
+      <p style="margin-top:6px;">Si "Usar Asistentes de control" está desactivado, el botón queda sin ninguna acción asignada y hay que configurarlo manualmente, lo cual es innecesario para un nivel básico.</p>
+    </div>
+    <div class="error-box reveal">
+      <b>Error 4 · Dejar nombres por defecto en los botones</b>
+      <p style="margin-top:6px;">Nombres como "Comando1", "Comando2" no dicen nada sobre su función y dificultan el mantenimiento posterior del formulario.</p>
+    </div>
+    <div class="error-box reveal">
+      <b>Error 5 · Duplicar botones de la misma acción</b>
+      <p style="margin-top:6px;">Tener dos botones de "Guardar registro" en el mismo formulario genera confusión visual sin aportar ninguna función nueva.</p>
+    </div>
+    <div class="error-box reveal">
+      <b>Error 6 · No probar el formulario después de crearlo</b>
+      <p style="margin-top:6px;">Cada botón debe probarse en Vista Formulario antes de darlo por terminado. Un botón que "se ve bien" en Vista Diseño puede no funcionar como se espera.</p>
+    </div>
+
+    <div class="exercise reveal">
+      <div class="exercise-tag">Ejercicio 4 · Detecta el error</div>
+      <h4>Lee el caso y elige qué salió mal</h4>
+      <p style="font-size:.9rem; color:var(--text);">"Sammir creó un botón, lo dibujó en el formulario, pero al hacer clic en Vista Formulario no pasó nada. Antes de dibujar el botón, había estado revisando las propiedades del formulario y sin darse cuenta desactivó un ícono del grupo Controles."</p>
+      <ul class="ex-list" id="errorquiz">
+        <li class="ex-item" data-radio="err" data-correct="0"><div class="box"></div><span class="txt">Eligió mal la categoría del asistente</span></li>
+        <li class="ex-item" data-radio="err" data-correct="1"><div class="box"></div><span class="txt">Desactivó "Usar Asistentes de control" antes de dibujar el botón</span></li>
+        <li class="ex-item" data-radio="err" data-correct="0"><div class="box"></div><span class="txt">El formulario no tenía origen de datos</span></li>
+      </ul>
+      <button class="btn" onclick="checkRadio('errorquiz','fberr')">Verificar respuesta</button>
+      <div class="feedback" id="fberr"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 6. BUENAS PRACTICAS ================= -->
+<section class="alt" id="buenas">
+  <div class="wrap">
+    <div class="kicker maroon">Bloque 6</div>
+    <h2>Buenas prácticas y checklist final</h2>
+    <div class="grid2" style="margin-top:20px;">
+      <div class="card reveal">
+        <h3>Organización visual</h3>
+        <p>Agrupa los botones de navegación en un mismo sector del formulario (por ejemplo, abajo) y los de acción en otro (por ejemplo, arriba a la derecha), para que el usuario reconozca el patrón rápidamente.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Nombres consistentes</h3>
+        <p>Usa un prefijo fijo para los botones, como <span class="mono">btn</span>, seguido de la acción: btnSiguiente, btnGuardar, btnCerrar. Esto es una convención, no una obligación de Access, pero ordena el trabajo.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Prueba cada botón</h3>
+        <p>Después de agregar cada botón, cambia a Vista Formulario y compruébalo antes de seguir con el siguiente. Detectar un error de a uno es mucho más simple que revisar diez botones al final.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Guarda con nombre descriptivo</h3>
+        <p>El nombre del formulario en el Panel de navegación debe indicar claramente su contenido, por ejemplo "Formulario Clientes" en lugar de "Formulario1".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 7. QUIZ FINAL ================= -->
+<section id="quiz">
+  <div class="wrap">
+    <div class="kicker teal">Bloque 7</div>
+    <h2>Quiz final · 10 preguntas</h2>
+    <div class="lead-block reveal">
+      <p>Responde cada pregunta seleccionando una opción. Al terminar las diez, pulsa "Calificar quiz" para ver tu resultado.</p>
+    </div>
+
+    <div id="quizcontainer"></div>
+    <button class="btn teal" onclick="gradeQuiz()">Calificar quiz</button>
+
+    <div id="quizresult">
+      <div class="score" id="scorenum">0<span>/10</span></div>
+      <p id="scoremsg" style="margin-top:10px; font-size:1rem;"></p>
+      <button class="btn ghost" onclick="resetQuiz()">Volver a intentar</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Guía interactiva de formularios básicos en Access · Asistente para formularios y botones de comando · Sin código, sin SQL, sin VBA.</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- barra de progreso y scroll reveal ---------- */
+const bar = document.getElementById('progressbar');
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  bar.style.width = pct + '%';
+});
+
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); } });
+},{threshold:0.12});
+revealEls.forEach(el=>io.observe(el));
+
+/* ---------- TOC activo por sección ---------- */
+const sections = document.querySelectorAll('section[id]');
+const tocLinks = document.querySelectorAll('#tocpanel a');
+const secObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      tocLinks.forEach(l=>l.classList.remove('active'));
+      const link = document.querySelector('#tocpanel a[href="#'+e.target.id+'"]');
+      if(link) link.classList.add('active');
+    }
+  });
+},{threshold:0.4});
+sections.forEach(s=>secObs.observe(s));
+
+/* ---------- checklist (ejercicio 1) ---------- */
+document.querySelectorAll('#checklist1 .ex-item').forEach(item=>{
+  item.addEventListener('click', ()=> item.classList.toggle('checked'));
+});
+function checkExercise(listId, fbId){
+  const items = document.querySelectorAll('#'+listId+' .ex-item');
+  let ok = true;
+  items.forEach(it=>{
+    const shouldBeChecked = it.dataset.correct === '1';
+    const isChecked = it.classList.contains('checked');
+    if(shouldBeChecked !== isChecked) ok = false;
+  });
+  const fb = document.getElementById(fbId);
+  fb.className = 'feedback ' + (ok ? 'ok' : 'bad');
+  fb.textContent = ok
+    ? '✓ Correcto: esos son los elementos que deben estar listos antes de crear el formulario.'
+    : '✗ Revisa de nuevo: hay elementos marcados o sin marcar que no corresponden.';
+}
+
+/* ---------- secuenciar (ejercicio 2) ---------- */
+const seqList = document.getElementById('seqlist');
+let dragEl = null;
+seqList.querySelectorAll('.seq-item').forEach(item=>{
+  item.addEventListener('dragstart', ()=>{ dragEl = item; item.classList.add('dragging'); });
+  item.addEventListener('dragend', ()=> item.classList.remove('dragging'));
+});
+seqList.addEventListener('dragover', (e)=>{
+  e.preventDefault();
+  const afterEl = getDragAfterElement(seqList, e.clientY);
+  if(afterEl == null){ seqList.appendChild(dragEl); }
+  else{ seqList.insertBefore(dragEl, afterEl); }
+});
+function getDragAfterElement(container, y){
+  const els = [...container.querySelectorAll('.seq-item:not(.dragging)')];
+  return els.reduce((closest, child)=>{
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height/2;
+    if(offset < 0 && offset > closest.offset){
+      return {offset:offset, element:child};
+    } else { return closest; }
+  }, {offset:-Infinity}).element;
+}
+function checkSequence(){
+  const items = [...seqList.querySelectorAll('.seq-item')];
+  const orders = items.map(i=>i.dataset.order);
+  const ok = orders.every((v,i)=> parseInt(v) === i+1);
+  const fb = document.getElementById('fbseq');
+  fb.className = 'feedback ' + (ok ? 'ok' : 'bad');
+  fb.textContent = ok
+    ? '✓ Correcto: ese es el orden cronológico exacto del asistente.'
+    : '✗ Aún no es el orden correcto. Recuerda: primero se abre el asistente, luego se eligen datos, distribución, título y por último Finalizar.';
+}
+
+/* ---------- emparejar (ejercicio 3) ---------- */
+let selectedMatch = null;
+document.querySelectorAll('.match-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    if(item.classList.contains('matched')) return;
+    if(!selectedMatch){
+      selectedMatch = item;
+      item.classList.add('selected');
+    } else {
+      if(selectedMatch === item){
+        item.classList.remove('selected'); selectedMatch = null; return;
+      }
+      const sameCol = selectedMatch.closest('.match-col') === item.closest('.match-col');
+      if(sameCol){
+        selectedMatch.classList.remove('selected');
+        selectedMatch = item; item.classList.add('selected');
+        return;
+      }
+      if(selectedMatch.dataset.match === item.dataset.match){
+        selectedMatch.classList.remove('selected');
+        selectedMatch.classList.add('matched');
+        item.classList.add('matched');
+        const fb = document.getElementById('fbmatch');
+        fb.className = 'feedback ok';
+        fb.textContent = '✓ Pareja correcta.';
+        checkAllMatched();
+      } else {
+        item.classList.add('wrong');
+        selectedMatch.classList.add('wrong');
+        const fb = document.getElementById('fbmatch');
+        fb.className = 'feedback bad';
+        fb.textContent = '✗ Esa pareja no corresponde. Intenta de nuevo.';
+        setTimeout(()=>{
+          item.classList.remove('wrong');
+          selectedMatch.classList.remove('wrong','selected');
+          selectedMatch = null;
+        },500);
+        return;
+      }
+      selectedMatch = null;
+    }
+  });
+});
+function checkAllMatched(){
+  const total = document.querySelectorAll('.match-item').length;
+  const matched = document.querySelectorAll('.match-item.matched').length;
+  if(matched === total){
+    const fb = document.getElementById('fbmatch');
+    fb.className = 'feedback ok';
+    fb.textContent = '✓ ¡Completado! Emparejaste todos los botones con su categoría correcta.';
+  }
+}
+
+/* ---------- radio simple (ejercicio 4) ---------- */
+document.querySelectorAll('#errorquiz .ex-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('#errorquiz .ex-item').forEach(i=>i.classList.remove('checked'));
+    item.classList.add('checked');
+  });
+});
+function checkRadio(listId, fbId){
+  const chosen = document.querySelector('#'+listId+' .ex-item.checked');
+  const fb = document.getElementById(fbId);
+  if(!chosen){
+    fb.className = 'feedback bad';
+    fb.textContent = 'Selecciona una opción antes de verificar.';
+    return;
+  }
+  const ok = chosen.dataset.correct === '1';
+  fb.className = 'feedback ' + (ok ? 'ok' : 'bad');
+  fb.textContent = ok
+    ? '✓ Correcto: el asistente de controles estaba desactivado, por eso el botón no tenía acción asignada.'
+    : '✗ No es esa. Piensa en qué paso previo a dibujar el botón pudo haberse desactivado.';
+}
+
+/* ---------- QUIZ FINAL ---------- */
+const quizData = [
+  {q:"¿Qué es un formulario en Access?", opts:["Una tabla con datos duplicados","Una interfaz gráfica para ver, capturar y editar datos de forma amigable","Un tipo de consulta de resumen","Un archivo exportado en PDF"], correct:1},
+  {q:"¿Dónde se encuentra el botón \"Asistente para formularios\"?", opts:["Pestaña Inicio → grupo Portapapeles","Pestaña Crear → grupo Formularios","Pestaña Diseño → grupo Herramientas","Pestaña Archivo → Opciones"], correct:1},
+  {q:"Antes de crear un formulario, ¿qué se debe tener listo?", opts:["Una tabla o consulta de origen con campos y datos correctos","Un informe ya impreso","Un macro configurado","Ninguna preparación es necesaria"], correct:0},
+  {q:"La distribución \"Tabular\" en el Asistente para formularios muestra:", opts:["Un solo registro por pantalla en formato de columnas","Varios registros en filas y columnas, como una hoja de cálculo","Solo los nombres de los campos sin datos","Un formulario sin campos"], correct:1},
+  {q:"Para agregar un botón funcional en Vista Diseño primero se debe:", opts:["Activar \"Usar Asistentes de control\" (la varita mágica)","Eliminar la tabla de origen","Cambiar el formulario a Vista Hoja de datos","Guardar el formulario como PDF"], correct:0},
+  {q:"Un botón de \"Ir al registro siguiente\" pertenece a la categoría:", opts:["Operaciones de formulario","Navegación de registros","Operaciones de informe","Aplicación"], correct:1},
+  {q:"Un botón de \"Guardar registro\" pertenece a la categoría:", opts:["Navegación de registros","Operaciones con registros","Varios","Aplicación"], correct:1},
+  {q:"¿Cuál es un error común al crear botones en Access?", opts:["Darles un nombre descriptivo","Probarlos después de crearlos","Dejarlos con el nombre por defecto como \"Comando1\"","Agruparlos por función"], correct:2},
+  {q:"¿En qué paso del Asistente para botones se elige entre texto o imagen?", opts:["En el primer paso, al elegir la categoría","En el paso donde se define la apariencia del botón","En el paso de guardar la base de datos","No existe esa opción en el asistente"], correct:1},
+  {q:"Después de crear un formulario con botones, ¿qué se debe hacer siempre?", opts:["Cerrarlo sin guardar","Probar cada botón para confirmar que funciona correctamente","Eliminar la tabla de origen","Exportarlo directamente sin revisión"], correct:1}
+];
+
+const qContainer = document.getElementById('quizcontainer');
+quizData.forEach((item, qi)=>{
+  const qDiv = document.createElement('div');
+  qDiv.className = 'quiz-q';
+  qDiv.innerHTML = `<div class="qnum">Pregunta ${qi+1} de 10</div><h4>${item.q}</h4>`;
+  item.opts.forEach((opt, oi)=>{
+    const optDiv = document.createElement('div');
+    optDiv.className = 'opt';
+    optDiv.dataset.q = qi; optDiv.dataset.o = oi;
+    optDiv.innerHTML = `<div class="radio"></div><span>${opt}</span>`;
+    optDiv.addEventListener('click', ()=>{
+      if(optDiv.classList.contains('locked')) return;
+      qDiv.querySelectorAll('.opt').forEach(o=>o.classList.remove('chosen'));
+      optDiv.classList.add('chosen');
+    });
+    qDiv.appendChild(optDiv);
+  });
+  qContainer.appendChild(qDiv);
+});
+
+function gradeQuiz(){
+  let score = 0;
+  const qDivs = qContainer.querySelectorAll('.quiz-q');
+  qDivs.forEach((qDiv, qi)=>{
+    const chosen = qDiv.querySelector('.opt.chosen');
+    const opts = qDiv.querySelectorAll('.opt');
+    opts.forEach(o=>o.classList.add('locked'));
+    const correctIdx = quizData[qi].correct;
+    opts[correctIdx].classList.add('correct');
+    if(chosen){
+      const chosenIdx = parseInt(chosen.dataset.o);
+      if(chosenIdx === correctIdx){ score++; }
+      else{ chosen.classList.add('incorrect'); }
+    }
+  });
+  document.getElementById('scorenum').innerHTML = score + '<span>/10</span>';
+  let msg;
+  if(score === 10) msg = '¡Excelente! Dominas por completo el proceso del Asistente para formularios y botones.';
+  else if(score >= 7) msg = 'Muy bien. Tienes claro el proceso; repasa las preguntas falladas antes de practicar en Access.';
+  else if(score >= 4) msg = 'Vas por buen camino. Vuelve a revisar los bloques 3 y 4 antes de intentarlo de nuevo.';
+  else msg = 'Repasa la guía desde el Bloque 1 con calma y vuelve a intentar el quiz.';
+  document.getElementById('scoremsg').textContent = msg;
+  document.getElementById('quizresult').style.display = 'block';
+  document.getElementById('quizresult').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function resetQuiz(){
+  qContainer.querySelectorAll('.opt').forEach(o=>{
+    o.classList.remove('chosen','correct','incorrect','locked');
+  });
+  document.getElementById('quizresult').style.display = 'none';
+  qContainer.scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+
+</body>
+</html>
